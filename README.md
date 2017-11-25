@@ -1,7 +1,7 @@
 # OpenFaaS Functions
 
 ## Echo
-Simple function which echos the data posted to it
+Simple function which echos the data posted to it.  
 [s3upload/README.md](s3upload/README.md)
 
 ```yaml
@@ -12,7 +12,7 @@ Simple function which echos the data posted to it
 ```
 
 ## S3 Upload
-Upload a file to a s3 bucket  
+Upload a file to a s3 bucket.  
 [s3upload/README.md](s3upload/README.md)
 
 ```yaml
