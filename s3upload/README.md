@@ -2,10 +2,10 @@
 Simple function to upload a file to a S3 bucket
 
 ```yaml
-s3store:
+s3upload:
   lang: go
-  handler: ./s3store
-  image: nicholasjackson/func_s3store
+  handler: ./s3upload
+  image: nicholasjackson/func_s3upload
   environment:
     bucket: "my-s3-bucket"
     accessKeyID: "xxxxxxxxxxxxxxxxx"
