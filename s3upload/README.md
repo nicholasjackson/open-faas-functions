@@ -15,10 +15,10 @@ s3store:
 ```
 
 ## Environment variables
-*bucket*: Name for the s3 bucket  
-*accessKeyID*: AWS access key to use for storage access  
-*secretAccessKey*: AWS secret to use for storage access  
-*region*: - AWS region  
+**bucket**: Name for the s3 bucket  
+**accessKeyID**: AWS access key to use for storage access  
+**secretAccessKey**: AWS secret to use for storage access  
+**region**: AWS region  
 
 ## Payload
 ```json
