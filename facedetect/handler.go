@@ -34,8 +34,9 @@ func Handle(req []byte) string {
 		data = req
 	}
 
-	if http.DetectContentType(data) != "image/jpeg" {
-		return "Only jpeg images in plain or base64 encoded formats are acceptable inputs"
+	typ := http.DetectContentType(data)
+	if typ != "image/jpeg" && typ != "image/png" {
+		return "Only jpeg or png images, either raw uncompressed bytes or base64 encoded are acceptable inputs, you uploaded: " + typ
 	}
 
 	tmpfile, err := ioutil.TempFile("/tmp", "image")
@@ -109,8 +110,7 @@ func (fp *FaceProcessor) DetectFaces(file string) (faces []image.Rectangle, boun
 	img := gocv.IMRead(file, gocv.IMReadColor)
 	defer img.Close()
 
-	bds := image.Rectangle{Min: image.Point{}, Max: image.Point{X: 800, Y: 600}}
-
+	bds := image.Rectangle{Min: image.Point{}, Max: image.Point{X: img.Cols(), Y: img.Rows()}}
 	//	gocv.CvtColor(img, img, gocv.ColorRGBToGray)
 	//	gocv.Resize(img, img, image.Point{}, 0.6, 0.6, gocv.InterpolationArea)
 

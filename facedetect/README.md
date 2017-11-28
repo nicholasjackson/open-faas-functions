@@ -9,7 +9,7 @@ Requires go-opencv template to build
 ```
 
 ## Input
-The input type of the function is controlled via a http header and accepts jpeg images, or base64 encoded jpegs.
+The input type of the function is controlled via a http header and accepts jpeg/png images, or base64 encoded jpegs and pngs.
 
 ## Output
 The face data is returned as an array of rectangles...
