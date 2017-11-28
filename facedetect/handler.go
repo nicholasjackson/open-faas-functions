@@ -8,6 +8,9 @@ import (
 	"image"
 	"image/color"
 	"io"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
 
 	"gocv.io/x/gocv"
@@ -23,25 +26,29 @@ type Response struct {
 
 // Handle a serverless request
 func Handle(req []byte) string {
+
+	var data []byte
+
 	data, err := base64.StdEncoding.DecodeString(string(req))
 	if err != nil {
-		return "Image not base64 encoded"
+		data = req
 	}
 
-	if _, err := os.Stat("./tmp.jpg"); !os.IsNotExist(err) {
-		os.Remove("./tmp.jpg")
+	if http.DetectContentType(data) != "image/jpeg" {
+		return "Only jpeg images in plain or base64 encoded formats are acceptable inputs"
 	}
 
-	f, err := os.Create("./tmp.jpg")
+	tmpfile, err := ioutil.TempFile("/tmp", "image")
 	if err != nil {
-		return fmt.Sprintf("%s", err)
+		log.Fatal(err)
 	}
-	defer f.Close()
 
-	io.Copy(f, bytes.NewBuffer(data))
+	defer os.Remove(tmpfile.Name()) // clean up
+
+	io.Copy(tmpfile, bytes.NewBuffer(data))
 
 	faceProcessor := NewFaceProcessor()
-	faces, bounds := faceProcessor.DetectFaces("./tmp.jpg")
+	faces, bounds := faceProcessor.DetectFaces(tmpfile.Name())
 
 	resp := Response{
 		Faces:  faces,

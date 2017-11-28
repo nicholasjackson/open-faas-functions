@@ -9,7 +9,7 @@ Requires go-opencv template to build
 ```
 
 ## Input
-Base64 encoded JPEG
+The input type of the function is controlled via a http header and accepts jpeg images, or base64 encoded jpegs.
 
 ## Output
 The face data is returned as an array of rectangles...
@@ -28,5 +28,7 @@ The face data is returned as an array of rectangles...
 The images must be base64 encoded jpegs you can test the function from the command line using the following command
 
 ```bash
-$ cat pic.jpg| base64 | faas-cli --gateway http://192.168.1.113:8080/ invoke facedetect
+$ cat pic.jpg | faas-cli --gateway http://192.168.1.113:8080/ invoke facedetect
+# or
+$ cat pic.jpg | base64 | faas-cli --gateway http://192.168.1.113:8080/ invoke facedetect
 ```
