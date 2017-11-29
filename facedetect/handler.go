@@ -97,7 +97,7 @@ func (s BySize) Less(i, j int) bool {
 	return s[i].Size().X > s[j].Size().X && s[i].Size().Y > s[j].Size().Y
 }
 
-var blue = color.RGBA{0, 0, 255, 0}
+var yellow = color.RGBA{255, 255, 0, 0}
 
 // FaceProcessor detects the position of a face from an input image
 type FaceProcessor struct {
@@ -157,9 +157,6 @@ func (fp *FaceProcessor) DetectFaces(file string) (faces []image.Rectangle, boun
 
 			if len(eyes) > 0 || len(glasses) > 0 {
 				fcs = append(fcs, f)
-
-				gocv.Rectangle(img, f, blue, 1)
-				gocv.IMWrite("./detect.jpg", img)
 			}
 		}
 
@@ -175,7 +172,7 @@ func (fp *FaceProcessor) DrawFaces(file string, faces []image.Rectangle) ([]byte
 	defer img.Close()
 
 	for _, r := range faces {
-		gocv.Rectangle(img, r, blue, 1)
+		gocv.Rectangle(img, r, yellow, 1)
 	}
 
 	filename := fmt.Sprintf("/tmp/%d.jpg", time.Now().UnixNano())
