@@ -11,7 +11,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"time"
 
 	"gocv.io/x/gocv"
 )
@@ -48,6 +50,13 @@ func Handle(req []byte) string {
 
 	io.Copy(tmpfile, bytes.NewBuffer(data))
 
+	// fetch and process the query string
+	var output string
+	query, err := url.ParseQuery(os.Getenv("Http_Query"))
+	if err == nil {
+		output = query.Get("output")
+	}
+
 	faceProcessor := NewFaceProcessor()
 	faces, bounds := faceProcessor.DetectFaces(tmpfile.Name())
 
@@ -61,6 +70,17 @@ func Handle(req []byte) string {
 		return fmt.Sprintf("Error encoding output: %s", err)
 	}
 
+	// do we need to create and output an image?
+	if output == "image" {
+		data, err := faceProcessor.DrawFaces(tmpfile.Name(), faces)
+		if err != nil {
+			return fmt.Sprint("Error creating image output: %s", err)
+		}
+
+		return string(data)
+	}
+
+	// return the coordinates
 	return string(j)
 }
 
@@ -147,4 +167,20 @@ func (fp *FaceProcessor) DetectFaces(file string) (faces []image.Rectangle, boun
 	}
 
 	return nil, bds
+}
+
+// DrawFaces adds a rectangle to the given image with the face location
+func (fp *FaceProcessor) DrawFaces(file string, faces []image.Rectangle) ([]byte, error) {
+	img := gocv.IMRead(file, gocv.IMReadColor)
+	defer img.Close()
+
+	for _, r := range faces {
+		gocv.Rectangle(img, r, blue, 1)
+	}
+
+	filename := fmt.Sprintf("/tmp/%d.jpg", time.Now().UnixNano())
+	gocv.IMWrite(filename, img)
+	defer os.Remove(filename) // clean up
+
+	return ioutil.ReadFile(filename)
 }

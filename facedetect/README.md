@@ -11,8 +11,14 @@ Requires go-opencv template to build
 ## Input
 The input type of the function is controlled via a http header and accepts jpeg/png images, or base64 encoded jpegs and pngs.
 
-## Output
+## Output Coordinates
 The face data is returned as an array of rectangles...
+
+```bash
+$ cat pic.jpg | faas-cli --gateway http://192.168.1.113:8080/ invoke facedetect
+# or
+$ cat pic.jpg | base64 | faas-cli --gateway http://192.168.1.113:8080/ invoke facedetect
+```
 
 ```json
 {
@@ -24,11 +30,11 @@ The face data is returned as an array of rectangles...
 }
 ```
 
-## Testing
-The images must be base64 encoded jpegs you can test the function from the command line using the following command
+## Output Image
+In addition to the raw data you can also choose to output an image with the faces boundaries drawn on it.  To enable this append the query flag with `output=image`
 
 ```bash
-$ cat pic.jpg | faas-cli --gateway http://192.168.1.113:8080/ invoke facedetect
-# or
-$ cat pic.jpg | base64 | faas-cli --gateway http://192.168.1.113:8080/ invoke facedetect
+$ cat pic.jpg | faas-cli --gateway http://192.168.1.113:8080/ invoke --query output=image facedetect > out.jpg
 ```
+
+![](./out.jpg)
