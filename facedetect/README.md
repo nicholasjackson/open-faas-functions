@@ -35,10 +35,10 @@ In addition to the raw data you can also choose to output an image with the face
 
 ```bash
 $ cat pic.jpg | faas-cli --gateway http://192.168.1.113:8080/ \
-  invoke \
-  --query output=image \
-  facedetect \
-  > out.jpg
+                   invoke \
+                   --query output=image \
+                   facedetect \
+ > out.jpg
 ```
 
 ![](./out.jpg)
