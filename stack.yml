@@ -27,3 +27,14 @@ functions:
     lang: go-opencv
     handler: ./facedetect
     image: nicholasjackson/func_facedetect
+    functions:
+  tweet:
+    lang: go
+    handler: ./tweet
+    image: nicholasjackson/func_tweet
+    environment:
+      twitter_consumer_key: xxxxxxxxx
+      twitter_consumer_secret: xxxxxxxxxxxx
+      twitter_access_token: xxxxxxxx
+      twitter_access_token_secret: xxxxxxx
+
