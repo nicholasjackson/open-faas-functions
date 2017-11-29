@@ -34,7 +34,7 @@ $ cat pic.jpg | base64 | faas-cli --gateway http://192.168.1.113:8080/ invoke fa
 In addition to the raw data you can also choose to output an image with the faces boundaries drawn on it.  To enable this append the query flag with `output=image`
 
 ```bash
-$ cat pic.jpg | faas-cli --gateway http://192.168.1.113:8080/ invoke --query output=image facedetect > out.jpg
+$ cat pic.jpg | faas-cli invoke --query output=image facedetect > out.jpg
 ```
 
 ![](./out.jpg)
