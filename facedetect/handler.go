@@ -168,6 +168,10 @@ func (fp *FaceProcessor) DetectFaces(file string) (faces []image.Rectangle, boun
 
 // DrawFaces adds a rectangle to the given image with the face location
 func (fp *FaceProcessor) DrawFaces(file string, faces []image.Rectangle) ([]byte, error) {
+	if len(faces) == 0 {
+		return ioutil.ReadFile(file)
+	}
+
 	img := gocv.IMRead(file, gocv.IMReadColor)
 	defer img.Close()
 

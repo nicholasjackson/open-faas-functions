@@ -11,10 +11,17 @@ import (
 	"github.com/matryer/is"
 )
 
-func setupTests(t *testing.T, tweetReturn anaconda.Tweet, err error) (*TwitterPosterMock, *is.I) {
+func setupTests(
+	t *testing.T,
+	tweetReturn anaconda.Tweet,
+	mediaReturn anaconda.Media,
+	err error) (*TwitterPosterMock, *is.I) {
 	mockedTwitterPoster := &TwitterPosterMock{
 		PostTweetFunc: func(status string, v url.Values) (anaconda.Tweet, error) {
 			return tweetReturn, err
+		},
+		UploadMediaFunc: func(base64String string) (anaconda.Media, error) {
+			return mediaReturn, err
 		},
 	}
 
@@ -28,7 +35,7 @@ func setupTests(t *testing.T, tweetReturn anaconda.Tweet, err error) (*TwitterPo
 }
 
 func TestInvalidRequestReturnsBadRequest(t *testing.T) {
-	_, is := setupTests(t, anaconda.Tweet{}, nil)
+	_, is := setupTests(t, anaconda.Tweet{}, anaconda.Media{}, nil)
 
 	resp := marshalResponse(Handle([]byte("Nic")))
 
@@ -36,7 +43,7 @@ func TestInvalidRequestReturnsBadRequest(t *testing.T) {
 }
 
 func TestEmptyTextReturnsBadRequest(t *testing.T) {
-	_, is := setupTests(t, anaconda.Tweet{}, nil)
+	_, is := setupTests(t, anaconda.Tweet{}, anaconda.Media{}, nil)
 
 	resp := marshalResponse(Handle([]byte(`{ "Text": "" }`)))
 
@@ -44,7 +51,7 @@ func TestEmptyTextReturnsBadRequest(t *testing.T) {
 }
 
 func TestValidMessageSendsTweet(t *testing.T) {
-	mt, is := setupTests(t, anaconda.Tweet{}, nil)
+	mt, is := setupTests(t, anaconda.Tweet{}, anaconda.Media{}, nil)
 	message := "Hey @Nic"
 
 	resp := marshalResponse(Handle([]byte(fmt.Sprintf(`{ "Text": "%s" }`, message))))
@@ -55,13 +62,47 @@ func TestValidMessageSendsTweet(t *testing.T) {
 }
 
 func TestFailSendingTweetReturnsErrro(t *testing.T) {
-	_, is := setupTests(t, anaconda.Tweet{}, fmt.Errorf("booom"))
+	_, is := setupTests(t, anaconda.Tweet{}, anaconda.Media{}, fmt.Errorf("booom"))
 	message := "Hey @Nic"
 
 	resp := marshalResponse(Handle([]byte(fmt.Sprintf(`{ "Text": "%s" }`, message))))
 
 	is.Equal("Tweet failed to send: booom", resp.Message) // expected error message
 	is.Equal(http.StatusInternalServerError, resp.Code)   // expected internal server error
+}
+
+func TestNotUploadsImageIfMissing(t *testing.T) {
+	mt, is := setupTests(t, anaconda.Tweet{}, anaconda.Media{}, nil)
+	message := "Hey @Nic"
+
+	marshalResponse(Handle([]byte(fmt.Sprintf(`{ "Text": "%s" }`, message))))
+
+	is.Equal(0, len(mt.UploadMediaCalls())) // should not have called media upload
+}
+
+func TestUploadsImageIfPresent(t *testing.T) {
+	mt, is := setupTests(t, anaconda.Tweet{}, anaconda.Media{}, nil)
+	message := "Hey @Nic"
+
+	marshalResponse(Handle([]byte(fmt.Sprintf(`{ "Text": "%s", "Image": "abc=" }`, message))))
+
+	is.Equal(1, len(mt.UploadMediaCalls())) // should have called media upload
+}
+
+func TestAddsMediaToImageIfPresent(t *testing.T) {
+	mt, is := setupTests(
+		t,
+		anaconda.Tweet{},
+		anaconda.Media{
+			MediaIDString: "123",
+		},
+		nil,
+	)
+	message := "Hey @Nic"
+
+	marshalResponse(Handle([]byte(fmt.Sprintf(`{ "text": "%s", "image": "abc=" }`, message))))
+
+	is.Equal("123", mt.PostTweetCalls()[0].V.Get("media_ids")) // should have added media id to tweet
 }
 
 func marshalResponse(rsp string) Response {

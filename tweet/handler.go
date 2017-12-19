@@ -12,7 +12,8 @@ import (
 
 // Request defines the input into the function
 type Request struct {
-	Text string
+	Text  string
+	Image string //base64 encoded image
 }
 
 // Response defines the response from the function
@@ -25,6 +26,7 @@ type Response struct {
 
 // TwitterPoster defines the behaviour for posting a tweet
 type TwitterPoster interface {
+	UploadMedia(base64String string) (media anaconda.Media, err error)
 	PostTweet(status string, v url.Values) (tweet anaconda.Tweet, err error)
 }
 
@@ -51,7 +53,22 @@ func Handle(req []byte) string {
 		return createResponse(http.StatusBadRequest, "Empty message")
 	}
 
-	_, err = client.PostTweet(r.Text, nil)
+	// upload the media
+	vars := url.Values{}
+
+	if r.Image != "" {
+		media, err := client.UploadMedia(r.Image)
+		if err != nil {
+			return createResponse(
+				http.StatusInternalServerError,
+				fmt.Sprintf("Unable to upload media: %s", err),
+			)
+		}
+
+		vars.Set("media_ids", media.MediaIDString)
+	}
+
+	_, err = client.PostTweet(r.Text, vars)
 	if err != nil {
 		return createResponse(
 			http.StatusInternalServerError,

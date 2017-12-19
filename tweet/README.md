@@ -26,7 +26,8 @@ All keys and secrets can be found at https://dev.twitter.com/apps/YOUR_APP_ID/sh
 Request is a simple json object containing the message to send
 ```json
 {
-  "Message": "Test Message"
+  "Text": "Test Message",
+  "Image": "base64 image"
 }
 ```
 
