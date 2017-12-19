@@ -50,5 +50,6 @@ $ echo '{ "Text": "Testing something else" }' | faas-cli invoke tweet
 or with an image
 
 ```bash
-$ echo '{ "Text": "Hey, a tweet with an image", "Image": "$(cat ./mypicture.png | base64)" }' | faas-cli invoke tweet
+$ echo '{ "Text": "Hey, a tweet with an image", "Image": "$(cat ./mypicture.png | base64)" }' | \
+  faas-cli invoke tweet
 ```
