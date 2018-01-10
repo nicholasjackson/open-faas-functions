@@ -1,6 +1,6 @@
 provider:
   name: faas
-  gateway: http://192.168.1.113:8080
+  gateway: http://faasd-nomad.service.consul:8080
 
 functions:
   echo:
@@ -37,4 +37,8 @@ functions:
       twitter_consumer_secret: xxxxxxxxxxxx
       twitter_access_token: xxxxxxxx
       twitter_access_token_secret: xxxxxxx
+  bcrypt:
+    lang: go
+    handler: ./bcrypt
+    image: nicholasjackson/func_bcrypt
 

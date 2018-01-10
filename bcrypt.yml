@@ -1,9 +1,0 @@
-provider:
-  name: faas
-  gateway: http://localhost:8080
-
-functions:
-  bcrypt:
-    lang: go
-    handler: ./bcrypt
-    image: bcrypt
