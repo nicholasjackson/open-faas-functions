@@ -59,3 +59,15 @@ Simple function to send a tweet using the twitter API
       twitter_access_token_secret: xxxxxxx
 
 ```
+
+
+## Bcrypt
+Simple function to bcrypt text and validate text hashed with bcrypt  
+[bcrypt/README.md](bcrypt/README.md)
+
+```yaml
+  bcrypt:
+    lang: go
+    handler: ./bcrypt
+    image: nicholasjackson/func_bcrypt
+```
