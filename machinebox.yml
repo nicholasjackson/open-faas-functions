@@ -1,0 +1,9 @@
+provider:
+  name: faas
+  gateway: http://gateway.service.consul:8080
+
+functions:
+  machinebox:
+    lang: go
+    handler: ./machinebox
+    image: nicholasjackson/machinebox
