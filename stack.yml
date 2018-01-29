@@ -27,7 +27,9 @@ functions:
     lang: go-opencv
     handler: ./facedetect
     image: nicholasjackson/func_facedetect
-    functions:
+    limits:
+      memory: 128
+      cpu: 1000
   tweet:
     lang: go
     handler: ./tweet

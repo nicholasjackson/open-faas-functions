@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/matryer/is"
+  packages = ["."]
+  revision = "c0323ceb4e996e4a8795670d1fb6f60e65b82fd2"
+
+[[projects]]
   name = "gocv.io/x/gocv"
   packages = ["."]
   revision = "ef7ac5441cd2019dbe2ab7e2eb52914e56148fef"
@@ -10,6 +16,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e65ce59308e4ad5b5437c5cb1592116fa3ece015f47aba129923f13abafdeaa7"
+  inputs-digest = "44c97d3911d9e6ab908bcb8e32c815f4335fe0cd9aa387429db6b4b7e38bba01"
   solver-name = "gps-cdcl"
   solver-version = 1

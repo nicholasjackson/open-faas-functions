@@ -22,8 +22,9 @@ import (
 
 // Response for the function
 type Response struct {
-	Faces  []image.Rectangle
-	Bounds image.Rectangle
+	Faces       []image.Rectangle
+	Bounds      image.Rectangle
+	ImageBase64 string
 }
 
 // Handle a serverless request
@@ -65,21 +66,26 @@ func Handle(req []byte) string {
 		Bounds: bounds,
 	}
 
+	// do we need to create and output an image?
+	var image []byte
+	if output == "image" || output == "json_image" {
+		var err error
+		image, err = faceProcessor.DrawFaces(tmpfile.Name(), faces)
+		if err != nil {
+			return fmt.Sprintf("Error creating image output: %s", err)
+		}
+
+		resp.ImageBase64 = base64.StdEncoding.EncodeToString(image)
+	}
+
+	if output == "image" {
+		return string(image)
+	}
+
 	j, err := json.Marshal(resp)
 	if err != nil {
 		return fmt.Sprintf("Error encoding output: %s", err)
 	}
-
-	// do we need to create and output an image?
-	if output == "image" {
-		data, err := faceProcessor.DrawFaces(tmpfile.Name(), faces)
-		if err != nil {
-			return fmt.Sprint("Error creating image output: %s", err)
-		}
-
-		return string(data)
-	}
-
 	// return the coordinates
 	return string(j)
 }
@@ -110,13 +116,13 @@ type FaceProcessor struct {
 func NewFaceProcessor() *FaceProcessor {
 	// load classifier to recognize faces
 	classifier1 := gocv.NewCascadeClassifier()
-	classifier1.Load("/home/app/cascades/haarcascade_frontalface_default.xml")
+	classifier1.Load("./cascades/haarcascade_frontalface_default.xml")
 
 	classifier2 := gocv.NewCascadeClassifier()
-	classifier2.Load("/home/app/cascades/haarcascade_eye.xml")
+	classifier2.Load("./cascades/haarcascade_eye.xml")
 
 	classifier3 := gocv.NewCascadeClassifier()
-	classifier3.Load("/home/app/cascades/haarcascade_eye_tree_eyeglasses.xml")
+	classifier3.Load("./cascades/haarcascade_eye_tree_eyeglasses.xml")
 
 	return &FaceProcessor{
 		faceclassifier:  &classifier1,
@@ -131,12 +137,12 @@ func (fp *FaceProcessor) DetectFaces(file string) (faces []image.Rectangle, boun
 	defer img.Close()
 
 	bds := image.Rectangle{Min: image.Point{}, Max: image.Point{X: img.Cols(), Y: img.Rows()}}
-	//	gocv.CvtColor(img, img, gocv.ColorRGBToGray)
+	//gocv.CvtColor(img, img, gocv.ColorRGBToGray)
 	//	gocv.Resize(img, img, image.Point{}, 0.6, 0.6, gocv.InterpolationArea)
 
 	// detect faces
 	tmpfaces := fp.faceclassifier.DetectMultiScaleWithParams(
-		img, 1.03, 3, 0, image.Point{X: 10, Y: 10}, image.Point{X: 200, Y: 200},
+		img, 1.07, 5, 0, image.Point{X: 10, Y: 10}, image.Point{X: 500, Y: 500},
 	)
 
 	fcs := make([]image.Rectangle, 0)
@@ -148,15 +154,21 @@ func (fp *FaceProcessor) DetectFaces(file string) (faces []image.Rectangle, boun
 			faceImage := img.Region(f)
 
 			eyes := fp.eyeclassifier.DetectMultiScaleWithParams(
-				faceImage, 1.03, 3, 0, image.Point{X: 0, Y: 0}, image.Point{X: 100, Y: 100},
+				faceImage, 1.01, 1, 0, image.Point{X: 0, Y: 0}, image.Point{X: 100, Y: 100},
 			)
+
+			if len(eyes) > 0 {
+				fcs = append(fcs, f)
+				continue
+			}
 
 			glasses := fp.glassclassifier.DetectMultiScaleWithParams(
-				faceImage, 1.03, 3, 0, image.Point{X: 0, Y: 0}, image.Point{X: 100, Y: 100},
+				faceImage, 1.01, 1, 0, image.Point{X: 0, Y: 0}, image.Point{X: 100, Y: 100},
 			)
 
-			if len(eyes) > 0 || len(glasses) > 0 {
+			if len(glasses) > 0 {
 				fcs = append(fcs, f)
+				continue
 			}
 		}
 

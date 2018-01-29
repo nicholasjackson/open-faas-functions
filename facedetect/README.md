@@ -38,3 +38,8 @@ $ cat pic.jpg | faas-cli invoke --query output=image facedetect > out.jpg
 ```
 
 ![](./out.jpg)
+
+## Developing
+To test this function locally OpenCV is required this can be installed with `brew install opencv`
+
+Then you need to ensure the environment variables are set with `source ./env.sh`

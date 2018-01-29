@@ -20,6 +20,12 @@
   version = "v0.2.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/matryer/is"
+  packages = ["."]
+  revision = "c0323ceb4e996e4a8795670d1fb6f60e65b82fd2"
+
+[[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
@@ -34,6 +40,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "29cde6edf3cfd8687a3395a2b4463f53559011ccd34be17c1637f50cb604df59"
+  inputs-digest = "9b747871a163824e9063f65671dc2f728b195900afb84abe556753cbe49d7d0e"
   solver-name = "gps-cdcl"
   solver-version = 1

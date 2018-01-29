@@ -1,6 +1,6 @@
 provider:
   name: faas
-  gateway: http://gateway.service.consul:8080
+  gateway: http://l:8080
 
 functions:
   machinebox:
