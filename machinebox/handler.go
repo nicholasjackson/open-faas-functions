@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"image/draw"
 	"io"
+	"os"
 
 	"github.com/llgcode/draw2d"
 	"github.com/llgcode/draw2d/draw2dimg"
@@ -44,8 +45,10 @@ type ImageEncoderDecoder interface {
 
 type graphicContextCreator func(img draw.Image) Drawable
 
+var machineboxURL = os.Getenv("machinebox_url")
+
 var dependencies = func() (FaceboxChecker, graphicContextCreator, ImageEncoderDecoder) {
-	return facebox.New("http://192.168.192.131:8080"),
+	return facebox.New(machineboxURL),
 		func(img draw.Image) Drawable {
 			return draw2dimg.NewGraphicContext(img)
 		},

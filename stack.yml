@@ -43,4 +43,11 @@ functions:
     lang: go
     handler: ./bcrypt
     image: nicholasjackson/func_bcrypt
+  machinebox:
+    lang: go
+    handler: ./machinebox
+    image: nicholasjackson/machinebox
+    environment:
+      machinebox_url: http://localhost:8080
+
 
