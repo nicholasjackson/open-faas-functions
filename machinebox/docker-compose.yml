@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+  function:
+    image: nicholasjackson/machinebox:latest
+    environment:
+      - machinebox_url=http://machinebox:8080
+    ports:
+      - 8081:8080
+    networks:
+      - new
+
+  machinebox:
+    image: machinebox/facebox:latest 
+    environment:
+      - MB_KEY=${MB_KEY}
+    ports:
+      - 8080:8080
+    networks:
+      - new
+
+
+networks:
+  new:

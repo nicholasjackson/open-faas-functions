@@ -49,5 +49,3 @@ functions:
     image: nicholasjackson/machinebox
     environment:
       machinebox_url: http://localhost:8080
-
-
