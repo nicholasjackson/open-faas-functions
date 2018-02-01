@@ -1,9 +1,0 @@
-provider:
-  name: faas
-  gateway: http://l:8080
-
-functions:
-  machinebox:
-    lang: go
-    handler: ./machinebox
-    image: nicholasjackson/machinebox
