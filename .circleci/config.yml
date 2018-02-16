@@ -1,31 +1,48 @@
 version: 2
 jobs:
-  test-machinebox:
+  setup:
     docker:
       - image: circleci/golang:1.9
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
     steps:
       - checkout
-      - run: go get github.com/DATA-DOG/godog
+      - run: 
+          name: install dependencies
+          command: go get github.com/DATA-DOG/godog
+      - save_cache:
+          key: openfaas-{{ epoch }}
+            paths:
+              - /go
+
+  test-machinebox:
+    docker:
+      - image: circleci/golang:1.9
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
+    steps:
+      - restore_cache:
+          key: openfaas
       - run: 
           name: test code
           command: |
-            cd machinebox
             go test -v ./...
 
   build-machinebox:
     docker:
       - image: circleci/golang:1.9
-    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
     steps:
-      - checkout
+      - restore_cache:
+          key: openfaas
       - run: env
 
 workflows:
   version: 2
   openfaas_functions:
     jobs:
-      - test-machinebox
+      - setup
+      - test-machinebox:
+          requires:
+            - setup
       - build-machinebox:
           requires:
             - test-machinebox
