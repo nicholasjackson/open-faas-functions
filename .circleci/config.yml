@@ -37,6 +37,16 @@ jobs:
           key: openfaas
       - run: pwd
 
+  test-bcrypt:
+    docker:
+      - image: golang:1.9.4
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/bcrypt
+    steps:
+      - run: rm -rf /go
+      - restore_cache:
+          key: openfaas
+      - run: go test -v ./...
+
 workflows:
   version: 2
   openfaas_functions:
@@ -48,4 +58,7 @@ workflows:
       - build-machinebox:
           requires:
             - test-machinebox
+      - test-bcrypt:
+          requires:
+            - setup
 
