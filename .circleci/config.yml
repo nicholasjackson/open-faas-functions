@@ -30,12 +30,14 @@ jobs:
   build-machinebox:
     docker:
       - image: golang:1.9.4
-    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
     steps:
       - run: rm -rf /go
       - restore_cache:
           key: openfaas
-      - run: pwd
+      - setup_remote_docker
+      - run: curl -sSL https://cli.openfaas.com | sudo sh
+      - run: faas-cli build --filter machinebox
 
   test-bcrypt:
     docker:
