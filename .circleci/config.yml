@@ -33,7 +33,7 @@ jobs:
     steps:
       - restore_cache:
           key: openfaas
-      - run: env
+      - run: pwd
 
 workflows:
   version: 2
