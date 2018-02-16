@@ -3,7 +3,7 @@ jobs:
   test-machinebox:
     docker:
       - image: circleci/golang:1.9
-    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
     steps:
       - checkout
       - run: go get github.com/DATA-DOG/godog
@@ -16,7 +16,7 @@ jobs:
   build-machinebox:
     docker:
       - image: circleci/golang:1.9
-    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
     steps:
       - checkout
       - run: env
