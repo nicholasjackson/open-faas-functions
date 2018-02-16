@@ -11,8 +11,8 @@ jobs:
           command: go get github.com/DATA-DOG/godog
       - save_cache:
           key: openfaas-{{ epoch }}
-            paths:
-              - /go
+          paths:
+            - /go
 
   test-machinebox:
     docker:
