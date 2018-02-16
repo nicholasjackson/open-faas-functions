@@ -1,0 +1,15 @@
+version: 2
+jobs:
+  build-machinebox:
+    docker:
+      - image: circleci/golang:1.9
+    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    steps:
+      - checkout
+      - run: env
+
+workflows:
+  version: 2
+  openfaas_functions:
+    jobs:
+      - build-machinebox
