@@ -23,6 +23,6 @@ workflows:
     jobs:
       - test-machinebox
       - build-machinebox:
-          - requires:
-              - test-machinebox
+          requires:
+            - test-machinebox
 
