@@ -3,11 +3,15 @@ jobs:
   test-machinebox:
     docker:
       - image: circleci/golang:1.9
-    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}/machinebox
+    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
     steps:
       - checkout
-      - run: pwd
-      - run: go test -v ./...
+      - run: go get github.com/DATA-DOG/godog
+      - run: 
+          name: test code
+          command: |
+            cd machinebox
+            go test -v ./...
 
   build-machinebox:
     docker:
