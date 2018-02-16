@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/DATA-DOG/godog"
+  packages = [".","colors","gherkin"]
+  revision = "4dc98b0e2b130c3c9d06868a050320e5b310d3e7"
+  version = "v0.7.4"
+
+[[projects]]
   branch = "master"
   name = "github.com/golang/freetype"
   packages = ["raster","truetype"]
@@ -40,6 +46,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9b747871a163824e9063f65671dc2f728b195900afb84abe556753cbe49d7d0e"
+  inputs-digest = "056c8ff1a5e3e1a435c0fd146be42d5c003f020a1cf8c31d9179f07d47237ee6"
   solver-name = "gps-cdcl"
   solver-version = 1

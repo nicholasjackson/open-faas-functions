@@ -2,7 +2,7 @@ version: '2'
 
 services:
   function:
-    image: nicholasjackson/machinebox:latest
+    image: nicholasjackson/machinebox:${CIRCLE_SHA1}
     environment:
       - machinebox_url=http://machinebox:8080
     ports:

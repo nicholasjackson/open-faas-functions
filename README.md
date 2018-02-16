@@ -1,5 +1,7 @@
 # OpenFaaS Functions
 
+[![CircleCI](https://circleci.com/gh/nicholasjackson/open-faas-functions.svg?style=svg)](https://circleci.com/gh/nicholasjackson/open-faas-functions)
+
 ## Echo
 Simple function which echos the data posted to it.  
 [s3upload/README.md](s3upload/README.md)

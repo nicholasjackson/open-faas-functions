@@ -1,15 +1,289 @@
 version: 2
 jobs:
-  build-machinebox:
+  setup:
     docker:
-      - image: circleci/golang:1.9
-    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
     steps:
       - checkout
-      - run: env
+      - run: 
+          name: Install Dependencies
+          command: |
+            go get github.com/DATA-DOG/godog
+            mkdir /docker_cache
+      - save_cache:
+          key: openfaas-code-{{ epoch }}
+          paths:
+            - /go
+      - save_cache:
+          key: openfaas-docker-{{ epoch }}
+          paths:
+            - /docker_cache
+
+  test-machinebox:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
+    steps:
+      - restore_cache:
+          key: openfaas-code
+      - run: 
+          name: Test
+          command: |
+            go test -v .
+
+  build-machinebox:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
+    steps:
+      - setup_remote_docker
+      - restore_cache:
+          key: openfaas-code
+      - run:
+          name: Run Tests
+          command: |
+            if git diff HEAD~ --name-only|grep -v machinebox; then
+              exit 0
+            fi
+
+            rm -rf machinebox/tests
+            curl -sSL https://cli.openfaas.com | sh
+            faas-cli build -f stack.yml --filter machinebox
+            docker tag nicholasjackson/machinebox:latest nicholasjackson/machinebox:${CIRCLE_SHA1}
+            docker image save -o /docker_cache/machinebox.tar nicholasjackson/machinebox:${CIRCLE_SHA1}
+      - save_cache:
+          key: openfaas-docker-{{ epoch }}
+          paths:
+            - /docker_cache
+
+  functional-test-machinebox:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
+    steps:
+      - setup_remote_docker
+      - restore_cache:
+          key: openfaas-code
+      - restore_cache:
+          key: openfaas-docker
+      - run: 
+          name: Functional Tests
+          command: |
+            if git diff HEAD~ --name-only|grep -v machinebox; then
+              exit 0
+            fi
+
+            docker image load -i /docker_cache/machinebox.tar
+            docker-compose pull --ignore-pull-failures
+            docker-compose up -d
+            docker create -v /go --name go alpine:3.4 /bin/true
+            docker cp /go go:/
+            docker run -it --volumes-from go -w /go/src/github.com/nicholasjackson/open-faas-functions/machinebox/tests \
+              -e "FAAS_SERVER=http://function:8080/" \
+              --network machinebox_new \
+              nicholasjackson/circleci_go:latest \
+              go test -v ./...
+
+  push-machinebox:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
+    steps:
+      - setup_remote_docker
+      - restore_cache:
+          key: openfaas-code
+      - restore_cache:
+          key: openfaas-docker
+      - run:
+          name: Push Image to Dockerhub
+          command: |
+            if git diff HEAD~ --name-only|grep -v machinebox; then
+              exit 0
+            fi
+
+            docker image load -i /docker_cache/machinebox.tar
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker tag nicholasjackson/machinebox:${CIRCLE_SHA1} nicholasjackson/machinebox:latest
+            docker push nicholasjackson/machinebox:latest
+
+  test-bcrypt:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/bcrypt
+    steps:
+      - restore_cache:
+          key: openfaas-code
+      - run: go test -v ./...
+  
+  test-tweet:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/tweet
+    steps:
+      - restore_cache:
+          key: openfaas-code
+      - run: go test -v ./...
+
+  build-tweet:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
+    steps:
+      - setup_remote_docker
+      - restore_cache:
+          key: openfaas-code
+      - run:
+          name: Run Tests
+          command: |
+            if git diff HEAD~ --name-only|grep -v tweet; then
+              exit 0
+            fi
+
+            curl -sSL https://cli.openfaas.com | sh
+            faas-cli build -f stack.yml --filter tweet
+            docker tag nicholasjackson/func_tweet:latest nicholasjackson/func_tweet:${CIRCLE_SHA1}
+            docker image save -o /docker_cache/tweet.tar nicholasjackson/func_tweet:${CIRCLE_SHA1}
+      - save_cache:
+          key: openfaas-docker-{{ epoch }}
+          paths:
+            - /docker_cache
+  
+  push-tweet:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/tweet
+    steps:
+      - setup_remote_docker
+      - restore_cache:
+          key: openfaas-code
+      - restore_cache:
+          key: openfaas-docker
+      - run:
+          name: Push Image to Dockerhub
+          command: |
+            if git diff HEAD~ --name-only|grep -v tweet; then
+              exit 0
+            fi
+
+            docker image load -i /docker_cache/tweet.tar
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker tag nicholasjackson/func_tweet:${CIRCLE_SHA1} nicholasjackson/func_tweet:latest
+            docker push nicholasjackson/func_tweet:latest
+  
+  test-facedetect:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/facedetect
+    steps:
+      - restore_cache:
+          key: openfaas-code
+      - run:
+          name: Install Dependencies
+          command: apt-get update && apt-get install -y libopencv-dev python-opencv
+      - run: 
+          name: Test
+          command: |
+            source env.sh
+            go test -v ./...
+
+  build-facedetect:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
+    steps:
+      - setup_remote_docker
+      - restore_cache:
+          key: openfaas-code
+      - run:
+          name: Run Tests
+          command: |
+            if git diff HEAD~ --name-only|grep -v facedetect; then
+              exit 0
+            fi
+
+            curl -sSL https://cli.openfaas.com | sh
+            faas-cli build -f stack.yml --filter facedetect
+            docker tag nicholasjackson/func_facedetect:latest nicholasjackson/func_facedetect:${CIRCLE_SHA1}
+            docker image save -o /docker_cache/facedetect.tar nicholasjackson/func_facedetect:${CIRCLE_SHA1}
+      - save_cache:
+          key: openfaas-docker-{{ epoch }}
+          paths:
+            - /docker_cache
+  
+  push-facedetect:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/facedetect
+    steps:
+      - setup_remote_docker
+      - restore_cache:
+          key: openfaas-code
+      - restore_cache:
+          key: openfaas-docker
+      - run:
+          name: Push Image to Dockerhub
+          command: |
+            if git diff HEAD~ --name-only|grep -v facedetect; then
+              exit 0
+            fi
+
+            docker image load -i /docker_cache/facedetect.tar
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker tag nicholasjackson/func_facedetect:${CIRCLE_SHA1} nicholasjackson/func_facedetect:latest
+            docker push nicholasjackson/func_facedetect:latest
 
 workflows:
   version: 2
   openfaas_functions:
     jobs:
-      - build-machinebox
+      - setup
+      
+      - test-machinebox:
+          requires:
+            - setup
+      - build-machinebox:
+          requires:
+            - test-machinebox
+      - functional-test-machinebox:
+          requires:
+            - build-machinebox
+      - push-machinebox:
+          requires:
+            - functional-test-machinebox
+          filters:
+            branches:
+              only:
+                - master
+
+      - test-bcrypt:
+          requires:
+            - setup
+     
+      - test-tweet:
+          requires:
+            - setup
+      - build-tweet:
+          requires:
+            - test-tweet
+      - push-tweet:
+          requires:
+            - build-tweet
+          filters:
+            branches:
+              only:
+                - master
+      
+      - test-facedetect:
+          requires:
+            - setup
+      - build-facedetect:
+          requires:
+            - test-facedetect
+      - push-facedetect:
+          requires:
+            - build-facedetect
+          filters:
+            branches:
+              only:
+                - master
