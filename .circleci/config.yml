@@ -36,7 +36,7 @@ jobs:
       - restore_cache:
           key: openfaas
       - setup_remote_docker
-      - run: curl -sSL https://cli.openfaas.com | sudo sh
+      - run: curl -sSL https://cli.openfaas.com | sh
       - run: faas-cli build --filter machinebox
 
   test-bcrypt:
