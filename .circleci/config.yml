@@ -19,6 +19,7 @@ jobs:
       - image: circleci/golang:1.9
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
     steps:
+      - run: rm -rf /go
       - restore_cache:
           key: openfaas
       - run: 
@@ -31,6 +32,7 @@ jobs:
       - image: circleci/golang:1.9
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
     steps:
+      - run: rm -rf /go
       - restore_cache:
           key: openfaas
       - run: pwd
