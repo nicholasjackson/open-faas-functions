@@ -16,7 +16,7 @@ jobs:
 
   test-machinebox:
     docker:
-      - image: circleci/golang:1.9
+      - image: golang:1.9.4
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
     steps:
       - run: rm -rf /go
@@ -29,7 +29,7 @@ jobs:
 
   build-machinebox:
     docker:
-      - image: circleci/golang:1.9
+      - image: golang:1.9.4
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
     steps:
       - run: rm -rf /go
