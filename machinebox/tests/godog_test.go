@@ -52,7 +52,7 @@ func iHaveAValidImage() error {
 func iCallMyFunction() error {
 	server := os.Getenv("FAAS_SERVER")
 
-	resp, err := http.Post(fmt.Sprintf("http://%s:8081", server), "application/jpeg", bytes.NewReader(imageData))
+	resp, err := http.Post(server, "application/jpeg", bytes.NewReader(imageData))
 	if err != nil {
 		return err
 	}

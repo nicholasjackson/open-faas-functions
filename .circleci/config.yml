@@ -72,7 +72,7 @@ jobs:
             docker create -v /go --name go alpine:3.4 /bin/true
             docker cp /go go:/
             docker run -it --volumes-from go -w /go/src/github.com/nicholasjackson/open-faas-functions/machinebox/tests \
-              -e "FAAS_SERVER=function" \
+              -e "FAAS_SERVER=http://function:8080/" \
               --network machinebox_new \
               nicholasjackson/circleci_go:latest \
               go test -v ./...
