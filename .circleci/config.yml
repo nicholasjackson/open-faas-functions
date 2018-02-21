@@ -36,6 +36,7 @@ jobs:
       - restore_cache:
           key: openfaas
       - setup_remote_docker
+      - run: rm -rf machinebox/tests
       - run: curl -sSL https://cli.openfaas.com | sh
       - run: faas-cli build --filter machinebox
 
