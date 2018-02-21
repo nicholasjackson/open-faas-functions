@@ -71,6 +71,8 @@ jobs:
           command: |
             docker-compose up -d
             cd tests
+            env | grep DOCKER
+            echo $PATH
             FAAS_SERVER=$DOCKER_HOST godog
 
   test-bcrypt:
