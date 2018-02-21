@@ -43,7 +43,8 @@ jobs:
           name: Save Docker Cache
           command: |
             mkdir /docker_cache
-            docker image save -o /docker_cache/machinebox.tar nicholasjackson/machinebox:latest
+            docker tag nicholasjackson/machinebox:latest nicholasjackson/machinebox:${CIRCLE_SHA1}
+            docker image save -o /docker_cache/machinebox.tar nicholasjackson/machinebox:${CIRCLE_SHA1}
       - save_cache:
           key: openfaas-{{ epoch }}
           paths:
@@ -65,6 +66,7 @@ jobs:
       - run: 
           name: Functional Tests
           command: |
+            docker-compose pull --ignore-pull-failures
             docker-compose up -d
             docker create -v /go --name go alpine:3.4 /bin/true
             docker cp /go go:/
