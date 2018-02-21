@@ -10,7 +10,7 @@ jobs:
           name: Install Dependencies
           command: go get github.com/DATA-DOG/godog
       - save_cache:
-          key: openfaas-{{ epoch }}
+          key: openfaas-code-{{ epoch }}
           paths:
             - /go
 
@@ -46,9 +46,8 @@ jobs:
             docker tag nicholasjackson/machinebox:latest nicholasjackson/machinebox:${CIRCLE_SHA1}
             docker image save -o /docker_cache/machinebox.tar nicholasjackson/machinebox:${CIRCLE_SHA1}
       - save_cache:
-          key: openfaas-{{ epoch }}
+          key: openfaas-docker-{{ epoch }}
           paths:
-            - /go
             - /docker_cache
 
   functional-test-machinebox:
@@ -58,7 +57,9 @@ jobs:
     steps:
       - run: rm -rf /go
       - restore_cache:
-          key: openfaas
+          key: openfaas-code
+      - restore_cache:
+          key: openfaas-docker
       - setup_remote_docker
       - run:
           name: Restore Docker Cache
