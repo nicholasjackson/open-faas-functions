@@ -82,14 +82,25 @@ jobs:
       - image: nicholasjackson/circleci_go:latest
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
     steps:
-      - run: rm -rf /go
+      - run:
+          name: Check Diff
+          command: |
+            LATEST_COMMIT=$(git rev-parse HEAD)
+            FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff .)
+            if [[ $? == 1 ]]; then
+              circleci step halt;
+            fi
       - restore_cache:
-          key: openfaas
+          key: openfaas-docker
       - setup_remote_docker
+      - run:
+          name: Restore Docker Cache
+          command: docker image load -i /docker_cache/machinebox.tar
       - run:
           name: Push Image to Dockerhub
           command: |
             docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker tag nicholasjackson/machinebox:${CIRCLE_SHA1} nicholasjackson/machinebox:latest
             docker push nicholasjackson/machinebox:latest
 
   test-bcrypt:
