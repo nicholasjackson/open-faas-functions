@@ -7,8 +7,8 @@ jobs:
     steps:
       - checkout
       - run: 
-          name: install dependencies
-          command: go get github.com/DATA-DOG/godog/cmd/godog
+          name: Install Dependencies
+          command: go get github.com/DATA-DOG/godog
       - save_cache:
           key: openfaas-{{ epoch }}
           paths:
@@ -23,7 +23,7 @@ jobs:
       - restore_cache:
           key: openfaas
       - run: 
-          name: test code
+          name: Test
           command: |
             go test -v .
 
@@ -39,6 +39,16 @@ jobs:
       - run: rm -rf machinebox/tests
       - run: curl -sSL https://cli.openfaas.com | sh
       - run: faas-cli build --filter machinebox
+      - run: 
+          name: Save Docker Cache
+          command: |
+            mkdir /docker_cache
+            docker image save -o /docker_cache/machinebox.tar nicholasjackson/machinebox:latest
+      - save_cache:
+          key: openfaas-{{ epoch }}
+          paths:
+            - /go
+            - /docker_cache
 
   functional-test-machinebox:
     docker:
@@ -49,6 +59,9 @@ jobs:
       - restore_cache:
           key: openfaas
       - setup_remote_docker
+      - run:
+          name: Restore Docker Cache
+          command: docker image load -i /docker_cache/machinebox.tar
       - run: 
           name: Functional Tests
           command: |
