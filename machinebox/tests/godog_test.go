@@ -9,14 +9,29 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"testing"
+	"time"
 
 	"github.com/DATA-DOG/godog"
 )
 
-func main() { /* usual main func */ }
-
 var imageData []byte
 var responseData []byte
+
+func TestMain(m *testing.M) {
+	status := godog.RunWithOptions("godog", func(s *godog.Suite) {
+		FeatureContext(s)
+	}, godog.Options{
+		Format:    "progress",
+		Paths:     []string{"features"},
+		Randomize: time.Now().UTC().UnixNano(), // randomize scenario execution order
+	})
+
+	if st := m.Run(); st > status {
+		status = st
+	}
+	os.Exit(status)
+}
 
 func iHaveAValidImage() error {
 	f, err := os.Open("./good.jpg")

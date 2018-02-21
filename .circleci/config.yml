@@ -2,13 +2,13 @@ version: 2
 jobs:
   setup:
     docker:
-      - image: circleci/golang:1.9
+      - image: nicholasjackson/circleci_go:latest
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
     steps:
       - checkout
       - run: 
           name: install dependencies
-          command: go get github.com/DATA-DOG/godog
+          command: go get github.com/DATA-DOG/godog/cmd/godog
       - save_cache:
           key: openfaas-{{ epoch }}
           paths:
@@ -51,13 +51,14 @@ jobs:
       - run: 
           name: Functional Tests
           command: |
-            ls $GOPATH/bin
             docker-compose up -d
-            docker run -it -v /go:/go -w /go/src/github.com/nicholasjackson/open-faas-functions/machinebox/tests \
-              -e "FAAS_SERVER=function"
-              -network new
+            docker create -v /go --name go alpine:3.4 /bin/true
+            docker cp /go go:/
+            docker run -it --volumes-from go -w /go/src/github.com/nicholasjackson/open-faas-functions/machinebox/tests \
+              -e "FAAS_SERVER=function" \
+              --network machinebox_new \
               nicholasjackson/circleci_go:latest \
-              godog
+              go test -v ./...
 
   push-machinebox:
     docker:
