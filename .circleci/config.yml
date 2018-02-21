@@ -53,11 +53,26 @@ jobs:
           command: |
             ls $GOPATH/bin
             docker-compose up -d
-            docker run -v /go:/go -w /go/src/github.com/nicholasjackson/open-faas-functions/machinebox/tests \
+            docker run -it -v /go:/go -w /go/src/github.com/nicholasjackson/open-faas-functions/machinebox/tests \
               -e "FAAS_SERVER=function"
               -network new
               nicholasjackson/circleci_go:latest \
               godog
+
+  push-machinebox:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
+    steps:
+      - run: rm -rf /go
+      - restore_cache:
+          key: openfaas
+      - setup_remote_docker
+      - run:
+          name: Push Image to Dockerhub
+          command: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push nicholasjackson/machinebox:latest
 
   test-bcrypt:
     docker:
@@ -84,6 +99,13 @@ workflows:
       - functional-test-machinebox:
           requires:
             - build-machinebox
+      - push-machinebox:
+          requires:
+            - functional-test-machinebox
+          filters:
+            branches:
+              only:
+                - master
 
       - test-bcrypt:
           requires:
