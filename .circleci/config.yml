@@ -16,7 +16,7 @@ jobs:
 
   test-machinebox:
     docker:
-      - image: golang:1.9.4
+      - image: nicholasjackson/circleci_go:latest
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
     steps:
       - run: rm -rf /go
@@ -29,51 +29,35 @@ jobs:
 
   build-machinebox:
     docker:
-      - image: golang:1.9.4
+      - image: nicholasjackson/circleci_go:latest
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
     steps:
       - run: rm -rf /go
       - restore_cache:
           key: openfaas
       - setup_remote_docker
-      - run:
-          name: Install Docker client
-          command: |
-            set -x
-            VER="17.12.0-ce"
-            curl -L -o /tmp/docker-$VER.tgz https://download.docker.com/linux/static/stable/x86_64/docker-$VER.tgz
-            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
-            mv /tmp/docker/* /usr/bin
       - run: curl -sSL https://cli.openfaas.com | sh
       - run: faas-cli build --filter machinebox
 
   functional-test-machinebox:
     docker:
-      - image: golang:1.9.4
+      - image: nicholasjackson/circleci_go:latest
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
     steps:
       - run: rm -rf /go
       - restore_cache:
           key: openfaas
       - setup_remote_docker
-      - run:
-          name: Install Docker client
-          command: |
-            set -x
-            VER="17.12.0-ce"
-            curl -L -o /tmp/docker-$VER.tgz https://download.docker.com/linux/static/stable/x86_64/docker-$VER.tgz
-            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
-            mv /tmp/docker/* /usr/bin
-            curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` -o /usr/bin/docker-compose
-            chmod +x /usr/bin/docker-compose
       - run: 
           name: Functional Tests
           command: |
+            ls $GOPATH/bin
             docker-compose up -d
-            cd tests
-            env | grep DOCKER
-            echo $PATH
-            FAAS_SERVER=$DOCKER_HOST godog
+            docker run -v /go:/go -w /go/src/github.com/nicholasjackson/open-faas-functions/machinebox/tests \
+              -e "FAAS_SERVER=function"
+              -network new
+              nicholasjackson/circleci_go:latest \
+              godog
 
   test-bcrypt:
     docker:
