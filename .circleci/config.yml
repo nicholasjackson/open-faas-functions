@@ -19,7 +19,6 @@ jobs:
       - image: nicholasjackson/circleci_go:latest
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
     steps:
-      - run: rm -rf /go
       - restore_cache:
           key: openfaas
       - run: 
@@ -32,7 +31,6 @@ jobs:
       - image: nicholasjackson/circleci_go:latest
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
     steps:
-      - run: rm -rf /go
       - restore_cache:
           key: openfaas
       - setup_remote_docker
@@ -55,7 +53,6 @@ jobs:
       - image: nicholasjackson/circleci_go:latest
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
     steps:
-      - run: rm -rf /go
       - restore_cache:
           key: openfaas-code
       - restore_cache:
