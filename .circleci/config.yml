@@ -25,7 +25,7 @@ jobs:
       - run: 
           name: test code
           command: |
-            go test -v ./...
+            go test -v .
 
   build-machinebox:
     docker:
