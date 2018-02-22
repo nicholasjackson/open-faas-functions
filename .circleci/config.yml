@@ -31,6 +31,7 @@ jobs:
       - image: nicholasjackson/circleci_go:latest
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
     steps:
+      - setup_remote_docker
       - restore_cache:
           key: openfaas
       - run:
