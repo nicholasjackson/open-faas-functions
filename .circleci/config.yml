@@ -49,7 +49,7 @@ jobs:
 
             rm -rf machinebox/tests
             curl -sSL https://cli.openfaas.com | sh
-            faas-cli build -f ../stack.yml --filter machinebox
+            faas-cli build -f stack.yml --filter machinebox
             docker tag nicholasjackson/machinebox:latest nicholasjackson/machinebox:${CIRCLE_SHA1}
             docker image save -o /docker_cache/machinebox.tar nicholasjackson/machinebox:${CIRCLE_SHA1}
       - save_cache:
@@ -115,6 +115,61 @@ jobs:
       - restore_cache:
           key: openfaas-code
       - run: go test -v ./...
+  
+  test-tweet:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/tweet
+    steps:
+      - restore_cache:
+          key: openfaas-code
+      - run: go test -v ./...
+
+  build-tweet:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
+    steps:
+      - setup_remote_docker
+      - restore_cache:
+          key: openfaas-code
+      - run:
+          name: Run Tests
+          command: |
+            if git diff HEAD~ --name-only|grep -v tweet; then
+              exit 0
+            fi
+
+            curl -sSL https://cli.openfaas.com | sh
+            faas-cli build -f stack.yml --filter tweet
+            docker tag nicholasjackson/func_tweet:latest nicholasjackson/func_tweet:${CIRCLE_SHA1}
+            docker image save -o /docker_cache/tweet.tar nicholasjackson/func_tweet:${CIRCLE_SHA1}
+      - save_cache:
+          key: openfaas-docker-{{ epoch }}
+          paths:
+            - /docker_cache
+  
+  push-tweet:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/tweet
+    steps:
+      - setup_remote_docker
+      - restore_cache:
+          key: openfaas-code
+      - restore_cache:
+          key: openfaas-docker
+      - run:
+          name: Push Image to Dockerhub
+          command: |
+            if git diff HEAD~ --name-only|grep -v tweet; then
+              exit 0
+            fi
+
+            docker image load -i /docker_cache/tweet.tar
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker tag nicholasjackson/func_tweet:${CIRCLE_SHA1} nicholasjackson/func_tweet:latest
+            docker push nicholasjackson/func_tweet:latest
 
 workflows:
   version: 2
@@ -142,4 +197,13 @@ workflows:
       - test-bcrypt:
           requires:
             - setup
-      
+     
+      - test-tweet:
+          requires:
+            - setup
+      - build-tweet:
+          requires:
+            - test-tweet
+      - push-tweet:
+          requires:
+            - build-tweet
