@@ -170,6 +170,61 @@ jobs:
             docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker tag nicholasjackson/func_tweet:${CIRCLE_SHA1} nicholasjackson/func_tweet:latest
             docker push nicholasjackson/func_tweet:latest
+  
+  test-facedetect:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/facedetect
+    steps:
+      - restore_cache:
+          key: openfaas-code
+      - run: go test -v ./...
+
+  build-facedetect:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
+    steps:
+      - setup_remote_docker
+      - restore_cache:
+          key: openfaas-code
+      - run:
+          name: Run Tests
+          command: |
+            if git diff HEAD~ --name-only|grep -v facedetect; then
+              exit 0
+            fi
+
+            curl -sSL https://cli.openfaas.com | sh
+            faas-cli build -f stack.yml --filter facedetect
+            docker tag nicholasjackson/func_facedetect:latest nicholasjackson/func_facedetect:${CIRCLE_SHA1}
+            docker image save -o /docker_cache/facedetect.tar nicholasjackson/func_facedetect:${CIRCLE_SHA1}
+      - save_cache:
+          key: openfaas-docker-{{ epoch }}
+          paths:
+            - /docker_cache
+  
+  push-facedetect:
+    docker:
+      - image: nicholasjackson/circleci_go:latest
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/facedetect
+    steps:
+      - setup_remote_docker
+      - restore_cache:
+          key: openfaas-code
+      - restore_cache:
+          key: openfaas-docker
+      - run:
+          name: Push Image to Dockerhub
+          command: |
+            if git diff HEAD~ --name-only|grep -v facedetect; then
+              exit 0
+            fi
+
+            docker image load -i /docker_cache/facedetect.tar
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker tag nicholasjackson/func_facedetect:${CIRCLE_SHA1} nicholasjackson/func_facedetect:latest
+            docker push nicholasjackson/func_facedetect:latest
 
 workflows:
   version: 2
@@ -207,3 +262,13 @@ workflows:
       - push-tweet:
           requires:
             - build-tweet
+      
+      - test-facedetect:
+          requires:
+            - setup
+      - build-facedetect:
+          requires:
+            - test-facedetect
+      - push-facedetect:
+          requires:
+            - build-facedetect
