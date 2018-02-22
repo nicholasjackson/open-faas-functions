@@ -97,6 +97,7 @@ jobs:
       - image: nicholasjackson/circleci_go:latest
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
     steps:
+      - setup_remote_docker
       - restore_cache:
           key: openfaas-code
       - run:
@@ -110,7 +111,6 @@ jobs:
             fi
       - restore_cache:
           key: openfaas-docker
-      - setup_remote_docker
       - run:
           name: Restore Docker Cache
           command: docker image load -i /docker_cache/machinebox.tar
