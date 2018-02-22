@@ -178,7 +178,14 @@ jobs:
     steps:
       - restore_cache:
           key: openfaas-code
-      - run: go test -v ./...
+      - run:
+          name: Install Dependencies
+          command: apt-get update && apt-get install -y opencv
+      - run: 
+          name: Test
+          command: |
+            source env.sh
+            go test -v ./...
 
   build-facedetect:
     docker:
@@ -262,6 +269,10 @@ workflows:
       - push-tweet:
           requires:
             - build-tweet
+          filters:
+            branches:
+              only:
+                - master
       
       - test-facedetect:
           requires:
@@ -272,3 +283,7 @@ workflows:
       - push-facedetect:
           requires:
             - build-facedetect
+          filters:
+            branches:
+              only:
+                - master
