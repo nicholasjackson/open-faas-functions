@@ -180,7 +180,7 @@ jobs:
           key: openfaas-code
       - run:
           name: Install Dependencies
-          command: apt-get update && apt-get install -y opencv
+          command: apt-get update && apt-get install -y libopencv-dev python-opencv
       - run: 
           name: Test
           command: |
