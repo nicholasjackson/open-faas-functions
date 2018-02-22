@@ -8,11 +8,17 @@ jobs:
       - checkout
       - run: 
           name: Install Dependencies
-          command: go get github.com/DATA-DOG/godog
+          command: |
+            go get github.com/DATA-DOG/godog
+            mkdir /docker_cache
       - save_cache:
           key: openfaas-code-{{ epoch }}
           paths:
             - /go
+      - save_cache:
+          key: openfaas-docker-{{ epoch }}
+          paths:
+            - /docker_cache
 
   test-machinebox:
     docker:
@@ -35,22 +41,17 @@ jobs:
       - restore_cache:
           key: openfaas
       - run:
-          name: Cancel job when no changes
+          name: Run Tests
           command: |
-            # Only push when changes
             LATEST_COMMIT=$(git rev-parse HEAD)
             FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff .)
             if [ $FOLDER1_COMMIT = $LATEST_COMMIT ]; then
-              circleci build halt 
+              exit 0
             fi
-      - setup_remote_docker
-      - run: rm -rf machinebox/tests
-      - run: curl -sSL https://cli.openfaas.com | sh
-      - run: faas-cli build --filter machinebox
-      - run: 
-          name: Save Docker Cache
-          command: |
-            mkdir /docker_cache
+
+            rm -rf machinebox/tests
+            curl -sSL https://cli.openfaas.com | sh
+            faas-cli build --filter machinebox
             docker tag nicholasjackson/machinebox:latest nicholasjackson/machinebox:${CIRCLE_SHA1}
             docker image save -o /docker_cache/machinebox.tar nicholasjackson/machinebox:${CIRCLE_SHA1}
       - save_cache:
