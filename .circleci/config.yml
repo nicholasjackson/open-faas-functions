@@ -35,7 +35,7 @@ jobs:
   build-machinebox:
     docker:
       - image: nicholasjackson/circleci_go:latest
-    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
+    working_directory: /go/src/github.com/nicholasjackson/open-faas-functions
     steps:
       - setup_remote_docker
       - restore_cache:
@@ -43,9 +43,7 @@ jobs:
       - run:
           name: Run Tests
           command: |
-            LATEST_COMMIT=$(git rev-parse HEAD)
-            FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff .)
-            if [ $FOLDER1_COMMIT = $LATEST_COMMIT ]; then
+            if git diff HEAD~ --name-only|grep -v machinebox; then
               exit 0
             fi
 
@@ -72,9 +70,7 @@ jobs:
       - run: 
           name: Functional Tests
           command: |
-            LATEST_COMMIT=$(git rev-parse HEAD)
-            FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff .)
-            if [ $FOLDER1_COMMIT = $LATEST_COMMIT ]; then
+            if git diff HEAD~ --name-only|grep -v machinebox; then
               exit 0
             fi
 
@@ -102,9 +98,7 @@ jobs:
       - run:
           name: Push Image to Dockerhub
           command: |
-            LATEST_COMMIT=$(git rev-parse HEAD)
-            FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff .)
-            if [ $FOLDER1_COMMIT = $LATEST_COMMIT ]; then
+            if git diff HEAD~ --name-only|grep -v machinebox; then
               exit 0
             fi
 
@@ -115,10 +109,9 @@ jobs:
 
   test-bcrypt:
     docker:
-      - image: golang:1.9.4
+      - image: nicholasjackson/circleci_go:latest
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/bcrypt
     steps:
-      - run: rm -rf /go
       - restore_cache:
           key: openfaas-code
       - run: go test -v ./...
