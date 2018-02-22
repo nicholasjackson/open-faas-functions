@@ -26,7 +26,7 @@ jobs:
     working_directory: /go/src/github.com/nicholasjackson/open-faas-functions/machinebox
     steps:
       - restore_cache:
-          key: openfaas
+          key: openfaas-code
       - run: 
           name: Test
           command: |
@@ -39,7 +39,7 @@ jobs:
     steps:
       - setup_remote_docker
       - restore_cache:
-          key: openfaas
+          key: openfaas-code
       - run:
           name: Run Tests
           command: |
@@ -81,10 +81,17 @@ jobs:
       - setup_remote_docker
       - run:
           name: Restore Docker Cache
-          command: docker image load -i /docker_cache/machinebox.tar
+          command: 
       - run: 
           name: Functional Tests
           command: |
+                        LATEST_COMMIT=$(git rev-parse HEAD)
+            FOLDER1_COMMIT=$(git log -1 --format=format:%H --full-diff .)
+            if [ $FOLDER1_COMMIT = $LATEST_COMMIT ]; then
+              exit 0
+            fi
+
+            docker image load -i /docker_cache/machinebox.tar
             docker-compose pull --ignore-pull-failures
             docker-compose up -d
             docker create -v /go --name go alpine:3.4 /bin/true
